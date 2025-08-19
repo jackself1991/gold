@@ -1,0 +1,409 @@
+import React from "react";
+
+/** Youreality+ Investor Deck｜一頁式說明網站（React + Tailwind）
+ *  - 掏金敘事 / 外部數據摘要（含來源連結）
+ *  - 初期資產組合（YouTube 縮圖 + SSV Coming Soon）
+ *  - 四大核心亮點（Icon + 留白 +易讀排版）
+ *  - 執行方式（勘探/洗砂/冶煉/金庫系統）
+ *  - 募資計畫（含 SVG 圓餅圖＋圖例）
+ *  - 募資代表 + 聯絡方式
+ */
+
+const Section = ({ title, subtitle, children }) => (
+  <section className="w-full max-w-6xl mx-auto px-6 py-14">
+    <div className="mb-6">
+      {subtitle && (
+        <p className="uppercase tracking-widest text-xs text-zinc-500 mb-2">
+          {subtitle}
+        </p>
+      )}
+      <h2 className="text-2xl md:text-3xl font-semibold leading-tight flex items-center gap-2">
+        <span className="inline-block h-3 w-3 rounded-full bg-amber-500" />
+        {title}
+      </h2>
+      <div className="mt-3 h-[2px] w-24 bg-gradient-to-r from-amber-500 via-amber-400 to-transparent rounded-full" />
+    </div>
+    {children}
+  </section>
+);
+
+const Card = ({ children }) => (
+  <div className="bg-white border rounded-2xl shadow-sm">{children}</div>
+);
+const CardHeader = ({ children }) => <div className="px-6 pt-6 pb-0">{children}</div>;
+const CardTitle = ({ children }) => <h3 className="text-lg font-semibold">{children}</h3>;
+const CardContent = ({ children }) => <div className="px-6 py-6">{children}</div>;
+
+/* --- Inline icons (no external deps) --- */
+const IconPickaxe = () => (
+  <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden>
+    <path d="M2 7c4-3 9-3 13 0l2-2 2 2-2 2c3 4 3 9 0 13l-2-2c2-3 2-7 0-10-3-2-7-2-10 0l2 2-2 2-2-2 2-2-3-3Z" fill="#F59E0B"/>
+  </svg>
+);
+const IconChip = () => (
+  <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden>
+    <rect x="5" y="5" width="14" height="14" rx="2" fill="#0EA5E9"/>
+    <rect x="9" y="9" width="6" height="6" rx="1" fill="white"/>
+  </svg>
+);
+const IconToken = () => (
+  <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden>
+    <circle cx="12" cy="12" r="9" fill="#10B981"/>
+    <path d="M8 12h8M12 8v8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+const IconGlobe = () => (
+  <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden>
+    <circle cx="12" cy="12" r="9" fill="#6366F1"/>
+    <path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" stroke="white" strokeWidth="1.5"/>
+  </svg>
+);
+
+/* --- Simple Pie Chart (pure SVG) --- */
+const Pie = ({ segments, size = 180 }) => {
+  const radius = size / 2;
+  const center = size / 2;
+  const total = segments.reduce((s, seg) => s + seg.value, 0);
+  let angleStart = -90;
+  const paths = segments.map((seg, i) => {
+    const angle = (seg.value / total) * 360;
+    const angleEnd = angleStart + angle;
+    const largeArc = angle > 180 ? 1 : 0;
+    const start = polar(center, center, radius, angleStart);
+    const end = polar(center, center, radius, angleEnd);
+    const d = `M ${center} ${center} L ${start.x} ${start.y} A ${radius} ${radius} 0 ${largeArc} 1 ${end.x} ${end.y} Z`;
+    angleStart = angleEnd;
+    return <path key={i} d={d} style={{ fill: seg.color }} />;
+  });
+  function polar(cx, cy, r, angleDeg) {
+    const rad = (angleDeg * Math.PI) / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+    }
+  return <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>{paths}</svg>;
+};
+
+/* --- YouTube Thumbs --- */
+const YouTubeThumb = ({ id, title }) => (
+  <a href={`https://youtu.be/${id}`} target="_blank" rel="noreferrer" className="block group">
+    <div className="relative overflow-hidden rounded-xl border bg-black">
+      <img
+        src={`https://img.youtube.com/vi/${id}/hqdefault.jpg`}
+        alt={title}
+        className="w-full aspect-video object-cover group-hover:opacity-90 transition"
+      />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="px-3 py-1.5 text-xs rounded-full bg-white/90 text-zinc-900 shadow">
+          ▶ 觀看影片
+        </div>
+      </div>
+    </div>
+  </a>
+);
+
+const ComingSoonThumb = ({ label = "Coming Soon" }) => (
+  <div className="relative overflow-hidden rounded-xl border bg-zinc-100">
+    <div className="w-full aspect-video flex items-center justify-center">
+      <span className="text-sm font-semibold text-zinc-500">{label}</span>
+    </div>
+  </div>
+);
+
+const Hero = () => (
+  <section className="relative overflow-hidden">
+    <div className="absolute inset-0" aria-hidden>
+      <div className="h-[460px] bg-[radial-gradient(1200px_320px_at_20%_0%,#fde68a,transparent),radial-gradient(1000px_300px_at_100%_20%,#f59e0b33,transparent)]" />
+      <div className="absolute inset-x-0 bottom-0 h-24 bg-[repeating-linear-gradient(45deg,#f59e0b33_0px,#f59e0b33_2px,transparent_2px,transparent_6px)] pointer-events-none" />
+    </div>
+    <div className="relative max-w-6xl mx-auto px-6 py-16">
+      <span className="inline-flex items-center rounded-full border border-amber-300/60 bg-amber-50 px-3 py-1 text-xs text-amber-700">
+        為 AI 時代打造的內容資產基金
+      </span>
+      <h1 className="mt-4 text-3xl md:text-5xl font-semibold leading-tight max-w-4xl">
+        在這裡，算力就是石油，數據就是黃金。<br />
+        而最純度最高的黃金，是人類才能生產的——<span className="text-amber-700">故事</span>。
+      </h1>
+      <p className="mt-4 text-zinc-700 text-lg max-w-4xl leading-relaxed">
+        一個好的故事，在未來將是無價的，甚至能構築一個個不同風格的世界。若有幸投資到神話級的故事，那就像挖掘到一座金礦。
+        YouTube 是我們手上的鏟子，Reality 是我們的土壤；加上監督製作與數據交易機制，我們將會挖出一座巨大的金礦，
+        生產龐大的數據，賣給在 AI 時代渴求互動與價值的人們。
+      </p>
+    </div>
+  </section>
+);
+
+export default function Page() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-zinc-50 to-white text-zinc-900">
+      {/* Header */}
+      <header className="sticky top-0 z-30 backdrop-blur bg-white/70 border-b">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-amber-500" />
+            <span className="font-semibold">Youreality+ 內容資產基金</span>
+            <span className="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs border bg-white text-zinc-700 border-zinc-200">
+              Investor Deck
+            </span>
+          </div>
+          <div className="text-xs text-zinc-500">掏金意象｜Proof-of-Story</div>
+        </div>
+      </header>
+
+      <Hero />
+
+      {/* 市場支撐（摘要 + 原始來源） */}
+      <Section title="礦脈｜外部數據支撐摘要" subtitle="MARKET EVIDENCE">
+        <Card>
+          <CardContent>
+            <p className="text-zinc-700 leading-relaxed mb-4">
+              我們處於由 AI、遊戲與沉浸式體驗交織的超大型市場交匯點，而共同瓶頸是「高品質故事」的供給。
+            </p>
+            <ul className="list-disc pl-5 space-y-2 text-sm text-zinc-800">
+              <li>
+                Generative AI：到 2030–2032 年規模可望達 <strong>約 1.3 兆美元</strong>（Bloomberg Intelligence）。
+                <a
+                  href="https://www.bloomberg.com/company/press/generative-ai-to-become-a-1-3-trillion-market-by-2032-research-finds/"
+                  target="_blank" rel="noreferrer" className="ml-2 underline text-amber-700">來源</a>
+              </li>
+              <li>
+                Metaverse：2030 年潛在經濟價值 <strong>約 5 兆美元</strong>（McKinsey）。
+                <a
+                  href="https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/unlocking-commerce-in-the-metaverse"
+                  target="_blank" rel="noreferrer" className="ml-2 underline text-amber-700">來源</a>
+              </li>
+              <li>
+                全球遊戲：2025 年規模 <strong>2,200 億美元</strong>等級（Newzoo）。
+                <a
+                  href="https://newzoo.com/resources/blog/global-games-market-update-q2-2025"
+                  target="_blank" rel="noreferrer" className="ml-2 underline text-amber-700">來源</a>
+              </li>
+              <li>
+                創作者經濟：市場已逾 <strong>1,000 億美元</strong>級，短影音日均觀看逾 <strong>500 億</strong>次（Influencer Marketing Hub）。
+                <a
+                  href="https://influencermarketinghub.com/influencer-marketing-benchmark-report/"
+                  target="_blank" rel="noreferrer" className="ml-2 underline text-amber-700">來源</a>
+              </li>
+            </ul>
+            <p className="text-xs text-zinc-500 mt-3">* 數字以原始報告為準；本頁僅供投資溝通之參考摘要。</p>
+          </CardContent>
+        </Card>
+      </Section>
+
+      {/* 初期資產組合（含縮圖） */}
+      <Section title="洗砂｜初期資產組合" subtitle="INITIAL PORTFOLIO">
+        <div className="grid md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader><CardTitle>我們回家吧</CardTitle></CardHeader>
+            <CardContent>
+              <YouTubeThumb id="mbJ53bNZuNI" title="我們回家吧 節目片段" />
+              <p className="text-sm text-zinc-700 leading-relaxed mt-3">
+                由主持人曾寶儀帶著各個明星、藝人回到自己的家鄉談「家的定義」。連續兩屆入圍金鐘獎，
+                累積流量破千萬，單集流量過百萬，具備 7 位數的穩定商務置入基礎。
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>最孤獨的小酒館</CardTitle></CardHeader>
+            <CardContent>
+              <YouTubeThumb id="uuFxushlFmU" title="最孤獨的小酒館 片段" />
+              <p className="text-sm text-zinc-700 leading-relaxed mt-3">
+                由導演徐嘉凱擔任旁白，透過真實故事與戲劇融合，打造跨平台的戲劇新物種。跨平台最高單集流量過百萬，
+                延攬金鐘、金馬演員與啦啦隊等 KOL 同台飆戲，創造熱議話題。
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Surviving In Silicon Valley</CardTitle></CardHeader>
+            <CardContent>
+              <ComingSoonThumb label="Coming Soon" />
+              <p className="text-sm text-zinc-700 leading-relaxed mt-3">
+                由矽谷房產行銷專家 Lucas 所主持，從購屋出發，深入了解當代美國夢的根源「矽谷」華人故事。
+                背後有房產開發與經紀公司直接投資，將以節目帶動房產經銷、抽成為商務模式，對標上千萬美元的營收規模。
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </Section>
+
+      {/* 四大核心亮點（Icons + spacing） */}
+      <Section title="冶煉｜四大核心亮點：為何這是獨一無二的投資機會" subtitle="WHY NOW & WHY US">
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+                  <IconPickaxe />
+                </div>
+                <CardTitle>1）雙軌道獲利機制（Dual-Track Profit)</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-sm text-zinc-700 space-y-3 leading-relaxed">
+              <p>我們為投資人設計了兼具短期流動性與長期高回報的獨特機制：</p>
+              <p><strong>軌道一：YPOINTS 價值實現（中期流動性/收益）</strong><br/>即時獲利：投資後即擁有等值 YPOINTS。
+                在交易機制啟動後，我們將協助投資人對外出售，實現獲利。<br/>質押生息：亦可將 YPOINTS 質押在看好的內容項目中，示意年化 5–10%。</p>
+              <p><strong>軌道二：基金版權清算（長期資本增值）</strong><br/>基金 5 年期滿後，對投資組合中的所有內容版權進行價值清算。
+                若成功投中爆款高流量 IP，預期可獲得 3–10 倍的資本回報（示意）。</p>
+              <p className="text-xs text-zinc-500">* 利率與回報僅為策略示意，實際以正式文件為準。</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
+                  <IconChip />
+                </div>
+                <CardTitle>2）AI 內容管理系統（AI-Powered CMS）</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-sm text-zinc-700 space-y-3 leading-relaxed">
+              <p>我們用科技放大內容的價值，而非僅僅是製作內容：</p>
+              <ul className="list-disc pl-5 space-y-1.5">
+                <li><strong>核心分發：</strong>所有內容以 YouTube 為核心平台，最大化觸及率。</li>
+                <li><strong>AI 賦能 · 切片化：</strong>自動將長影音剪輯為適合社群傳播的短影音（Shorts / Reels），進行病毒式擴散。</li>
+                <li><strong>AI 賦能 · 延展化：</strong>將同一故事內容轉譯為多模態風格（如日漫、美漫、寶萊塢風格），觸及全球不同文化圈層。</li>
+                <li><strong>角色化版權管理：</strong>以「角色」為最小單位進行版權與數據管理，精準追蹤每個角色的影響力、互動數據與商業價值。</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center">
+                  <IconToken />
+                </div>
+                <CardTitle>3）YPOINTS：下一代廣告與版權交易協議</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-sm text-zinc-700 space-y-3 leading-relaxed">
+              <ul className="list-disc pl-5 space-y-1.5">
+                <li><strong>為多方設計：</strong>以流量計費、數據衡量價值，讓廣告商與 IP 買方能用最直觀的方式與 IP 擁有者合作，解決傳統廣告採購與版權談判痛點。</li>
+                <li><strong>多重價值保證：</strong>除作為廣告與版權交易單位，YPOINTS 亦將是未來 Youreality+ 沉浸式體驗世界中的核心交易貨幣，確保其長期價值與應用場景。</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center">
+                  <IconGlobe />
+                </div>
+                <CardTitle>4）著眼未來的內容佈局（Future-Proof Strategy）</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-sm text-zinc-700 space-y-3 leading-relaxed">
+              <p>我們專注內容、善用科技，而非自研底層科技。站在科技巨頭的肩膀上，成為他們最需要的「彈藥」供應者：</p>
+              <ul className="list-disc pl-5 space-y-1.5">
+                <li>已準備可供 Runway Gen4 等工具進行多模態轉譯的龐大版權內容。</li>
+                <li>待 Google Genie3 往後世代成熟，我們預先備妥能讓世界模型變得有趣的真實故事與遊戲機制。</li>
+                <li>科技巨頭以高速推出工具，而他們將需要我們輸出的高價值內容去推廣、應用與行銷其技術。</li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      </Section>
+
+      {/* 執行方式 */}
+      <Section title="鑄造｜執行方式" subtitle="EXECUTION">
+        <Card>
+          <CardContent>
+            <ol className="list-decimal pl-6 space-y-2 text-sm text-zinc-800">
+              <li><strong>勘探：</strong>由專業團隊尋找具高潛力的真實故事與創作者。</li>
+              <li><strong>洗砂：</strong>透過 YouTube 以及其他社群影音平台，把實際內容分發出去進行數據累積，淘選出內容中最有價值的故事與角色。</li>
+              <li><strong>冶煉：</strong>將有數據支撐的故事與角色，進行多模態的切片分發，並建立起版權規範、估值，開放大眾進行二創推動角色故事繼續成長。</li>
+              <li><strong>金庫系統：</strong>透過 YPOINTS 交易相關內容數據、版權給需要的廣告主、元宇宙製作方、AI 賦能公司。</li>
+            </ol>
+          </CardContent>
+        </Card>
+      </Section>
+
+      {/* 募資計畫（含圓餅圖示意） */}
+      <Section title="金庫｜本次募資計畫（The Offering）" subtitle="THE OFFERING">
+        <Card>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-8 items-start">
+              <div className="space-y-3 text-sm text-zinc-800">
+                <div>
+                  <div className="mb-1 text-zinc-500">募資目標</div>
+                  <div className="text-lg font-semibold">US$ 1,000,000</div>
+                </div>
+                <div>
+                  <div className="mb-1 text-zinc-500">募資單位</div>
+                  <div className="text-lg font-semibold">US$ 100,000 × 10</div>
+                </div>
+                <div className="pt-2">
+                  <div className="mb-2 text-zinc-500">資金用途規劃</div>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>項目投資（60%）：US$ 600,000 —— 投資、開發具有社群價值、數據潛力的內容，並孵化新的角色版權。</li>
+                    <li>技術維運（15%）：US$ 150,000 —— 5 年期 AI 內容管理系統、資料庫與交易平台維護升級。</li>
+                    <li>管理費用（15%）：US$ 150,000 —— 5 年期基金管理、法務、行政等營運費用。</li>
+                    <li>儲備金（10%）：US$ 100,000 —— 應對市場變化之備用金。</li>
+                  </ul>
+                  <div className="mt-3 text-xs text-zinc-500">* 上述為投資摘要，最終條款以正式私募備忘錄（PPM）為準。</div>
+                </div>
+              </div>
+              <div className="flex flex-col items-center gap-4">
+                <Pie
+                  segments={[
+                    { label: "項目投資 60%", value: 60, color: "#F59E0B" },
+                    { label: "技術維運 15%", value: 15, color: "#60A5FA" },
+                    { label: "管理費用 15%", value: 15, color: "#34D399" },
+                    { label: "儲備金 10%", value: 10, color: "#A78BFA" },
+                  ]}
+                  size={180}
+                />
+                <div className="grid grid-cols-2 gap-2 text-xs text-zinc-700">
+                  <div className="flex items-center gap-2"><span className="inline-block w-3 h-3 rounded" style={{background:'#F59E0B'}}></span>項目投資 60%</div>
+                  <div className="flex items-center gap-2"><span className="inline-block w-3 h-3 rounded" style={{background:'#60A5FA'}}></span>技術維運 15%</div>
+                  <div className="flex items-center gap-2"><span className="inline-block w-3 h-3 rounded" style={{background:'#34D399'}}></span>管理費用 15%</div>
+                  <div className="flex items-center gap-2"><span className="inline-block w-3 h-3 rounded" style={{background:'#A78BFA'}}></span>儲備金 10%</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Section>
+
+      {/* 募資代表 */}
+      <Section title="礦隊長｜募資代表簡介" subtitle="ABOUT THE REPRESENTATIVE">
+        <Card>
+          <CardContent>
+            <div className="text-lg font-semibold">徐嘉凱（J.K. Hsu）｜影視 × 科技的前沿實踐者</div>
+            <ul className="list-disc pl-5 space-y-1.5 text-sm text-zinc-700 mt-2">
+              <li><strong>YouTube 實戰：</strong>2012 年即拍出 200 萬流量影片。</li>
+              <li><strong>科技金融整合：</strong>2018 年透過 ICO 籌資，完成全球首部區塊鏈電影《聖人大盜》，並入圍金馬獎。</li>
+              <li><strong>帶著串流走入主流：</strong>2020 年打造兩檔 YouTube 原生節目，成功入圍金鐘獎。</li>
+              <li><strong>前瞻視野：</strong>2022 年即完成 2030 年才可能拍攝的 AI 影集劇本《不死血脈》。</li>
+              <li><strong>募資實力：</strong>累積募資金額超過新台幣 1 億元，獲產官學影視多方支持，具卓越的資源整合與專案管理能力。</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </Section>
+
+      {/* 聯絡方式 */}
+      <Section title="聯絡窗口" subtitle="CONTACT">
+        <Card>
+          <CardContent>
+            <div className="text-sm">
+              WhatsApp：
+              <a href="https://wa.me/886933081980" target="_blank" rel="noreferrer" className="underline text-amber-700">
+                +886 933081980
+              </a>
+              <div className="mt-1">Email：<span className="font-mono">jack@selfgroup.cc</span></div>
+            </div>
+          </CardContent>
+        </Card>
+      </Section>
+
+      <footer className="border-t">
+        <div className="max-w-6xl mx-auto px-6 py-8 text-sm text-zinc-500 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>© {new Date().getFullYear()} Youreality+. All rights reserved.</div>
+          <div>設計主題：掏金｜Gold Rush</div>
+        </div>
+      </footer>
+    </div>
+  );
+}
